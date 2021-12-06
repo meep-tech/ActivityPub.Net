@@ -1,7 +1,10 @@
 ﻿using ActivityPub.Collections;
+using ActivityPub.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace ActivityPub.Types {
@@ -182,22 +185,19 @@ namespace ActivityPub.Types {
       throw new System.NotImplementedException();
     }
 
-    /*public new class JsonConverter : System.Text.Json.Serialization.JsonConverter<Link> {
+    public new class JsonConverter : DefaultConverterFactory<Link> {
 
-      public override void Write(Utf8JsonWriter writer, Link value, JsonSerializerOptions options) {
-        throw new NotImplementedException();
-      }
-
-      public override Link Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+      protected override Link Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions modifiedOptions, JsonConverter<Link> defaultConverter) {
         // pure strings turn into link entities
         if(reader.TokenType == JsonTokenType.String) {
           return new Link(reader.GetString()) { Context = null };
-        }
-        // deserialize fully:
-        else {
-
-        }
+        } else // use default converter:
+          return base.Read(ref reader, typeToConvert, modifiedOptions, defaultConverter);
       }
-    }*/
+
+      protected override void Write(Utf8JsonWriter writer, Link value, JsonSerializerOptions modifiedOptions, JsonConverter<Link> defaultConverter) {
+        base.Write(writer, value, modifiedOptions, defaultConverter);
+      }
+    }
   }
 }
