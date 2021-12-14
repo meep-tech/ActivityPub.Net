@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
-namespace ActivityPub.Utilities {
+namespace ActivityPub.Utilities.Json {
 
+	/// <summary>
+	/// Based On: https://stackoverflow.com/a/65430421/5037067 [Answer By dbc]
+	/// </summary>
 	public static class JsonSerializerExtensions {
 
 		/// <summary>

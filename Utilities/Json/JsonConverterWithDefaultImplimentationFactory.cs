@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
-namespace ActivityPub.Utilities {
+namespace ActivityPub.Utilities.Json {
 
   /// <summary>
   /// This allows the jsonconverter to fall back to default serialization.

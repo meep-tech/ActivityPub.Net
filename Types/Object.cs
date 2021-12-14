@@ -1,11 +1,11 @@
-﻿using ActivityPub.Collections;
+﻿using ActivityPub.Utilities.Json;
+using ActivityPub.Utilities.Collections;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 
-namespace ActivityPub.Types {
+namespace ActivityPub {
 
   /// <summary>
   /// Describes an object of any kind. 
