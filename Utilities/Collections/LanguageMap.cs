@@ -4,13 +4,15 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
-namespace ActivityPub.Collections {
+namespace ActivityPub.Utilities.Collections {
 
   /// <summary>
-  /// Used to map a language to a set of values
+  /// Used to map a language identifier to a set of values
   /// </summary>
-  /// <typeparam name="TValue"></typeparam>
-  public class LanguageMap<TValue> : IReadOnlyDictionary<string, TValue>, IEnumerable<TValue> {
+  public class LanguageMap<TValue> 
+    : IReadOnlyDictionary<string, TValue>,
+    IEnumerable<TValue>
+  {
 
     /// <summary>
     /// The default value for the default set language

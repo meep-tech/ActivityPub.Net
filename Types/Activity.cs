@@ -1,9 +1,9 @@
-﻿using ActivityPub.Collections;
+﻿using ActivityPub.Utilities.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 
-namespace ActivityPub.Types {
+namespace ActivityPub {
 
   /// <summary>
   /// An Activity is a subtype of Object that describes some form of action that may happen,

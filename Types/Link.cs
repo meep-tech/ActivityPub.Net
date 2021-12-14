@@ -1,10 +1,11 @@
-﻿using ActivityPub.Collections;
+﻿using ActivityPub.Utilities.Json;
+using ActivityPub.Utilities.Collections;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 
-namespace ActivityPub.Types {
+namespace ActivityPub {
 
   /// <summary>
   /// A Link is an indirect, qualified reference to a resource identified by a URL.
@@ -16,7 +17,17 @@ namespace ActivityPub.Types {
   /// https://www.w3.org/ns/activitystreams#Link
   /// </summary>
   [JsonSerializable(typeof(Link))]
-  public class Link : Entity {
+  public partial class Link : Entity {
+
+    /// <summary>
+    /// The type name for Objects
+    /// </summary>
+    [JsonIgnore]
+    public static IEnumerable<string> DefaultTypeNames {
+      get;
+    } = new string[] {
+      "Link"
+    };
 
     /// <summary>
     /// The type name for Objects
@@ -24,9 +35,7 @@ namespace ActivityPub.Types {
     [JsonIgnore]
     public override IEnumerable<string> DefaultTypes {
       get;
-    } = new string[] {
-      "Link"
-    };
+    } = DefaultTypeNames;
 
     /// <summary>
     /// The target resource pointed to by a Link.
@@ -36,8 +45,7 @@ namespace ActivityPub.Types {
     public virtual string Href {
       get => _href;
       init => _href = value;
-    }
-    protected string _href;
+    } protected string _href;
 
     /// <summary>
     /// A link relation associated with a Link. 
@@ -57,9 +65,8 @@ namespace ActivityPub.Types {
     public virtual IEnumerable<string> Rels {
       get => _rels;
       init => _rels = value?.ToList();
-    }
-    protected List<string> _rels;
-    public string Rel {
+    } protected List<string> _rels;
+    [JsonIgnore] public string Rel {
       get => Rels?.GetDefault();
       set {
         if(value == null) {
@@ -81,8 +88,7 @@ namespace ActivityPub.Types {
     public virtual string HrefLang {
       get => _hrefLang;
       init => _hrefLang = value;
-    }
-    protected string _hrefLang;
+    } protected string _hrefLang;
 
     /// <summary>
     /// On a Link, specifies a hint as to the rendering height in device-independent pixels of the linked resource.
@@ -92,9 +98,7 @@ namespace ActivityPub.Types {
     public virtual float? Height {
       get => _height;
       init => _height = value;
-    }
-    [JsonIgnore]
-    protected float? _height {
+    } [JsonIgnore] protected float? _height {
       get => __height;
       set {
         if(value < 0) {
@@ -103,8 +107,7 @@ namespace ActivityPub.Types {
 
         __height = value;
       }
-    }
-    float? __height;
+    } float? __height;
 
     /// <summary>
     /// On a Link, specifies a hint as to the rendering width in device-independent pixels of the linked resource.
@@ -114,9 +117,7 @@ namespace ActivityPub.Types {
     public virtual float? Width {
       get => _width;
       init => _width = value;
-    }
-    [JsonIgnore]
-    protected float? _width {
+    } [JsonIgnore] protected float? _width {
       get => __width;
       set {
         if(value < 0) {
@@ -125,8 +126,7 @@ namespace ActivityPub.Types {
 
         __width = value;
       }
-    }
-    float? __width;
+    } float? __width;
 
     /// <summary>
     /// A cache for the internal Object represented by the link.
@@ -181,23 +181,5 @@ namespace ActivityPub.Types {
     public static Object FetchObject(string href) {
       throw new System.NotImplementedException();
     }
-
-    /*public new class JsonConverter : System.Text.Json.Serialization.JsonConverter<Link> {
-
-      public override void Write(Utf8JsonWriter writer, Link value, JsonSerializerOptions options) {
-        throw new NotImplementedException();
-      }
-
-      public override Link Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-        // pure strings turn into link entities
-        if(reader.TokenType == JsonTokenType.String) {
-          return new Link(reader.GetString()) { Context = null };
-        }
-        // deserialize fully:
-        else {
-
-        }
-      }
-    }*/
   }
 }

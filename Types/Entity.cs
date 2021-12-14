@@ -1,17 +1,22 @@
-﻿using ActivityPub.Collections;
-using System;
-using System.Collections;
+﻿using ActivityPub.Utilities.Json;
+using ActivityPub.Utilities.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Text.Json.Serialization;
+using ActivityPub.Utilities;
 
-namespace ActivityPub.Types {
+namespace ActivityPub {
 
   /// <summary>
   /// Any type extending from any type in the ActivityPub standard https://www.w3.org/TR/activitystreams-vocabulary/#types
   /// </summary>
-  public abstract class Entity {
+  public abstract partial class Entity {
+
+    /// <summary>
+    /// Default media type used by links and objects
+    /// </summary>
+    public const string DefaultMediaType
+      = "text/html";
 
     /// <summary>
     /// The type name for Objects
@@ -126,7 +131,7 @@ namespace ActivityPub.Types {
       get => _mediaType;
       init => _mediaType = value;
     } protected string _mediaType
-      = "text/html";
+      = DefaultMediaType;
 
     /// <summary>
     /// A simple, human-readable, plain-text name for the object.
@@ -212,153 +217,5 @@ namespace ActivityPub.Types {
     /// </summary>
     public override string ToString()
       => this.Serialize();
-
-    public class JsonConverter : System.Text.Json.Serialization.JsonConverter<Entity> {
-      public override bool CanConvert(Type typeToConvert) 
-        => typeof(Entity) == typeToConvert;
-
-      public override Entity Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-       // pure strings turn into link entities
-        if(reader.TokenType == JsonTokenType.String) {
-          return new Link(reader.GetString()) { Context = null };
-        }
-
-        // Clone the reader to get the type
-        Utf8JsonReader typeTestReader = reader;
-
-        // make sure it's an object
-        if(typeTestReader.TokenType != JsonTokenType.StartObject) {
-          throw new JsonException();
-        }
-
-        // the first property might be type, if there's no context:
-        typeTestReader.Read();
-        if(typeTestReader.TokenType != JsonTokenType.PropertyName) {
-          throw new JsonException();
-        }
-
-        bool? foundType = false;
-        string propertyName = typeTestReader.GetString();
-        // if the first property isn't type, we need to find it
-        if(propertyName != "type") {
-          // skip child objects
-          bool isInChild = false;
-          while(foundType.HasValue && (!foundType.Value)) {
-            while(typeTestReader.TokenType != JsonTokenType.PropertyName || isInChild) {
-              try {
-                typeTestReader.Read();
-              }
-              catch {
-                foundType = null;
-                break;
-              }
-              if(typeTestReader.TokenType == JsonTokenType.StartObject) {
-                isInChild = true;
-              }
-              if(typeTestReader.TokenType == JsonTokenType.EndObject) {
-                isInChild = false;
-              }
-            }
-
-            // ran out of tape
-            if(foundType == null) {
-              break;
-            }
-
-            // found a property:
-            foundType = typeTestReader.GetString() == "type";
-            typeTestReader.Read();
-          }
-        }
-        else {
-          typeTestReader.Read();
-        }
-
-        // Get the type property values
-        IEnumerable<string> objectTypes
-          = null;
-        // if we didn't find any kind of type value
-        if(foundType is null) {
-          objectTypes = new string[] { Object.DefaultType };
-        } // if the type is in an array:
-        else if(typeTestReader.TokenType == JsonTokenType.StartArray) {
-          var types = new List<string>();
-          while(typeTestReader.TokenType != JsonTokenType.EndArray) {
-            typeTestReader.Read();
-            if(typeTestReader.TokenType == JsonTokenType.String) {
-              types.Add(typeTestReader.GetString());
-            }
-
-            objectTypes = types;
-          }
-        } // if the type is just a string
-        else if(typeTestReader.TokenType == JsonTokenType.String) {
-          objectTypes = new string[] { typeTestReader.GetString() };
-        } else 
-          throw new JsonException();
-
-        Entity @base = null;
-        foreach(var type in Settings.DefaultEntityTypeStrings) {
-          (System.Type systemType, IEnumerable<string> activityPubTypes) = type;
-          if(activityPubTypes.Intersect(objectTypes).Any()) {
-            @base = JsonSerializer.Deserialize(ref reader, systemType, options) as Entity;
-          }
-        }
-
-        return @base // if null, try to make it into a generic Object:
-          ?? (JsonSerializer.Deserialize(ref reader, typeof(Object), options) as Entity);
-      }
-
-      public override void Write(Utf8JsonWriter writer, Entity value, JsonSerializerOptions options) {
-        JsonSerializer.Serialize(writer, value, value.GetType(), Settings.EntitySerializationOptions);
-      }
-    }
-
-    public class SingleOrArrayConverter<TEnumeratingObject> 
-      : System.Text.Json.Serialization.JsonConverter<IEnumerable<TEnumeratingObject>> 
-    {
-
-      public override IEnumerable<TEnumeratingObject> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-        if(reader.TokenType == JsonTokenType.StartArray) {
-          return JsonSerializer.Deserialize<List<TEnumeratingObject>>(ref reader, options);
-        }
-        else {
-          return new[] {JsonSerializer.Deserialize<TEnumeratingObject>(ref reader, options)};
-        }
-      }
-
-      public override void Write(Utf8JsonWriter writer, IEnumerable<TEnumeratingObject> value, JsonSerializerOptions options) {
-        if(value is List<TEnumeratingObject> list) {
-          if(list.Count == 1) {
-            JsonSerializer.Serialize(writer, value.First(), list.First().GetType(), options);
-          }
-          else {
-            JsonSerializer.Serialize(writer, value, list.GetType(), options);
-          }
-        } else throw new NotImplementedException();
-      }
-    }
-  }
-
-  public static class EntityExtensions {
-
-    /// <summary>
-    /// Serialize an entity with default settings provided
-    /// </summary>
-    public static string Serialize(this Entity entity, JsonSerializerOptions optionsOverride = null)
-      => JsonSerializer.Serialize(entity, optionsOverride ?? Settings.EntitySerializationOptions);
-
-    /// <summary>
-    /// Serialize an entity with default settings provided
-    /// </summary>
-    public static Entity DeSerializeEntity(this string json, JsonSerializerOptions optionsOverride = null)
-      => JsonSerializer.Deserialize(json, typeof(Entity), optionsOverride ?? Settings.EntitySerializationOptions) as Entity;
-
-    /// <summary>
-    /// Serialize an entity with default settings provided
-    /// </summary>
-    public static TEntityType DeSerializeEntity<TEntityType>(this string json, JsonSerializerOptions optionsOverride = null)
-      where TEntityType : Entity
-        => JsonSerializer.Deserialize<TEntityType>(json, optionsOverride ?? Settings.EntitySerializationOptions);
   }
 }

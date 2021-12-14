@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace ActivityPub.Types {
+namespace ActivityPub {
 
   /// <summary>
   /// An object representing an image

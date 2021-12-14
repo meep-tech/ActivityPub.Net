@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ActivityPub.Collections {
+namespace ActivityPub.Utilities.Collections {
 
   /// <summary>
   /// A list restricted to certain valid types set on init:
@@ -17,6 +17,9 @@ namespace ActivityPub.Collections {
       init;
     }
 
+    /// <summary>
+    /// Add an item to the list
+    /// </summary>
     public new void Add(TValue item) {
       if(!(ValidTypes?.Contains(item.GetType()) ?? true)) {
         throw new ArgumentException($"Can only add types in ValidTypes to the collection");
@@ -24,6 +27,9 @@ namespace ActivityPub.Collections {
       base.Add(item);
     }
 
+    /// <summary>
+    /// Insert an item into the list
+    /// </summary>
     public new void Insert(int index, TValue item) {
       if(!(ValidTypes?.Contains(item.GetType()) ?? true)) {
         throw new ArgumentException($"Can only add types in ValidTypes to the collection");
