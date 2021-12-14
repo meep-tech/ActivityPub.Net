@@ -62,7 +62,7 @@ namespace ActivityPub.Types {
       init => _rels = value?.ToList();
     }
     protected List<string> _rels;
-    public string Rel {
+    [JsonIgnore] public string Rel {
       get => Rels?.GetDefault();
       set {
         if(value == null) {
@@ -185,18 +185,14 @@ namespace ActivityPub.Types {
       throw new System.NotImplementedException();
     }
 
-    public new class JsonConverter : DefaultConverterFactory<Link> {
+    public new class JsonConverter : JsonConverterWithDefaultImplimentationFactory<Link> {
 
-      protected override Link Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions modifiedOptions, JsonConverter<Link> defaultConverter) {
+      protected override Link Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions modifiedOptions) {
         // pure strings turn into link entities
         if(reader.TokenType == JsonTokenType.String) {
           return new Link(reader.GetString()) { Context = null };
         } else // use default converter:
-          return base.Read(ref reader, typeToConvert, modifiedOptions, defaultConverter);
-      }
-
-      protected override void Write(Utf8JsonWriter writer, Link value, JsonSerializerOptions modifiedOptions, JsonConverter<Link> defaultConverter) {
-        base.Write(writer, value, modifiedOptions, defaultConverter);
+          return base.Read(ref reader, typeToConvert, modifiedOptions);
       }
     }
   }

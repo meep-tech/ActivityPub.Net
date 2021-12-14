@@ -210,8 +210,8 @@ namespace ActivityPub.Types {
     /// <summary>
     /// ToString is To Json String
     /// </summary>
-    public override string ToString()
-      => this.Serialize();
+    /*public override string ToString()
+      => this.Serialize();*/
 
     public class JsonConverter : System.Text.Json.Serialization.JsonConverter<Entity> {
       public override bool CanConvert(Type typeToConvert) 
